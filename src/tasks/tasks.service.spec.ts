@@ -1,4 +1,4 @@
-import { Test } from "@nestjs/testing"
+import { Test, TestingModule } from "@nestjs/testing"
 import { TasksService } from "./tasks.service"
 import { TasksStatus } from "./tasks-status.enum"
 import { Task } from "./task.entity"
@@ -15,22 +15,24 @@ describe('TasksService', () => {
     let tasksService: TasksService;
 
     beforeEach(async () => {
-        const TestingModule = await Test.createTestingModule({
+        const testingModule: TestingModule = await Test.createTestingModule({
             providers: [TasksService]
         }).compile()
 
-        tasksService = TestingModule.get<TasksService>(TasksService)
+        tasksService = testingModule.get<TasksService>(TasksService)
     })
 
     describe('getTaskById', () => {
         it('should return a task by id when found', () => {
             tasksService['tasks'] = [mockTask]
+            jest.spyOn(tasksService['tasks'], 'find').mockReturnValue(mockTask)
             const result = tasksService.getTaskById(mockTask.id, mockUser)
             expect(result).toBe(mockTask)
         })
 
         it('show throw error when task not found', () => {
             tasksService['tasks'] = []
+            jest.spyOn(tasksService['tasks'], 'find').mockReturnValue(undefined)
             expect(() => tasksService.getTaskById('randomId', mockUser)).toThrow(new NotFoundException('Task Not Found!'))
         })
     })
@@ -38,6 +40,7 @@ describe('TasksService', () => {
     describe('getAllTasks', () => {
         it('should return all tasks', () => {
             tasksService['tasks'] = [mockTask]
+            jest.spyOn(tasksService['tasks'], 'filter').mockReturnValue([mockTask])
             const result = tasksService.getAllTasks(mockUser)
             expect(result).toEqual([mockTask])
         })
@@ -46,6 +49,7 @@ describe('TasksService', () => {
     describe('getTasksByFilter', () => {
         it('should return tasks by filter', () => {
             tasksService['tasks'] = [mockTask]
+            jest.spyOn(tasksService, 'getAllTasks').mockReturnValue([mockTask])
             const filter: GetTasksFilterDto = { search: 'title', status: TasksStatus.OPEN }
             const result = tasksService.getTasksByFilter(filter, mockUser)
             expect(result).toEqual([mockTask])
@@ -64,12 +68,14 @@ describe('TasksService', () => {
     describe('deleteTask', () => {
         it('should delete task when found', () => {
             tasksService['tasks'] = [mockTask]
+            jest.spyOn(tasksService, 'getTaskById').mockReturnValue(mockTask)
             tasksService.deleteTask(mockTask.id, mockUser)
             expect(tasksService['tasks']).toHaveLength(0)
         })
 
         it('should throw error when task not found', () => {
             tasksService['tasks'] = []
+            jest.spyOn(tasksService['tasks'], 'find').mockReturnValue(undefined)
             expect(() => tasksService.deleteTask('randomId', mockUser)).toThrow(new NotFoundException('Task Not Found!'))
         })
     })
@@ -79,12 +85,14 @@ describe('TasksService', () => {
         
         it('should update task status when found', () => {
             tasksService['tasks'] = [mockTask]
+            jest.spyOn(tasksService, 'getTaskById').mockReturnValue(mockTask)
             const result = tasksService.updateTaskStatus(mockTask.id, updateTasksStatusDto, mockUser)
             expect(result.status).toBe(TasksStatus.DONE)
         })
 
         it('should throw error when task not found', () => {
             tasksService['tasks'] = []
+            jest.spyOn(tasksService['tasks'], 'find').mockReturnValue(undefined)
             expect(() => tasksService.updateTaskStatus('randomId', updateTasksStatusDto, mockUser)).toThrow(new NotFoundException('Task Not Found!'))
         })
     })

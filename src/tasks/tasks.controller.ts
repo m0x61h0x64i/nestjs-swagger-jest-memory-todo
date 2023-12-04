@@ -19,9 +19,11 @@ import { CreateTaskDto } from './dto/create-tasks.dto';
 import { GetTasksFilterDto } from './dto/get-tasks.dto';
 import { UpdateTasksStatusDto } from './dto/update-tasks-status.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { User } from 'src/auth/user.entity';
+import { NotFoundSwagger } from 'src/swagger/not-found.swagger';
+import { BadRequestSwagger } from 'src/swagger/bad-request.swagger';
 
 @ApiTags('Tasks')
 @ApiBearerAuth('User Access Token')
@@ -31,7 +33,7 @@ export class TasksController {
     constructor(private tasksService: TasksService) { }
 
     @ApiOperation({ summary: 'Get Tasks' })
-    @ApiOkResponse({ type: Task, isArray: true })
+    @ApiOkResponse({ description: 'OK', type: Task, isArray: true })
     @Get()
     getTasks(
         @Query(ValidationPipe) getTasksDto: GetTasksFilterDto,
@@ -41,8 +43,8 @@ export class TasksController {
     }
 
     @ApiOperation({ summary: 'Get Task' })
-    @ApiOkResponse({ type: Task })
-    @ApiNotFoundResponse({ description: 'Task Not Found!' })
+    @ApiOkResponse({ description: 'OK', type: Task })
+    @ApiNotFoundResponse({ description: 'Task Not Found!', type: NotFoundSwagger })
     @Get(':id')
     getTaskById(
         @Param('id') id: string,
@@ -52,8 +54,8 @@ export class TasksController {
     }
 
     @ApiOperation({ summary: 'Create Task' })
-    @ApiCreatedResponse({ type: Task })
-    @ApiBadRequestResponse({ description: 'Validation Error' })
+    @ApiCreatedResponse({ description: 'OK', type: Task })
+    @ApiBadRequestResponse({ description: 'Validation Error', type: BadRequestSwagger })
     @Post()
     @UsePipes(ValidationPipe)
     createTask(
@@ -64,7 +66,8 @@ export class TasksController {
     }
 
     @ApiOperation({ summary: 'Delete Task' })
-    @ApiNotFoundResponse({ description: 'Task Not Found!' })
+    @ApiNoContentResponse({ description: 'OK' })
+    @ApiNotFoundResponse({ description: 'Task Not Found!', type: NotFoundSwagger })
     @HttpCode(HttpStatus.NO_CONTENT)
     @Delete(':id')
     deleteTask(
@@ -75,8 +78,8 @@ export class TasksController {
     }
 
     @ApiOperation({ summary: 'Update Task' })
-    @ApiBadRequestResponse({ description: 'Validation Error' })
-    @ApiOkResponse({ type: Task })
+    @ApiBadRequestResponse({ description: 'Validation Error', type: BadRequestSwagger })
+    @ApiOkResponse({ description: 'OK', type: Task })
     @Patch(':id/status')
     updateTaskStatus(
         @Param('id') id: string,

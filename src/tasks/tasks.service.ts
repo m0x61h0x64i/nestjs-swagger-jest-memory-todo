@@ -71,10 +71,6 @@ export class TasksService {
     deleteTask(id: string, user: User): void {
         const foundTask: Task = this.getTaskById(id, user);
 
-        if (!foundTask) {
-            throw new NotFoundException('Task Not Found!')
-        }
-
         this.tasks = this.tasks.filter((task) => task.id !== foundTask.id);
     }
 

@@ -3,7 +3,10 @@ import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.entity';
 import { GetUserDto } from './dto/get-user.dto';
-import { ApiBadRequestResponse, ApiConflictResponse, ApiNotFoundResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiConflictResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ConflictSwagger } from 'src/swagger/conflict.swagger';
+import { BadRequestSwagger } from 'src/swagger/bad-request.swagger';
+import { NotFoundSwagger } from 'src/swagger/not-found.swagger';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -11,8 +14,9 @@ export class AuthController {
     constructor(private authService: AuthService) { }
     
     @ApiOperation({ summary: 'User Signup' })
-    @ApiConflictResponse({ description: 'User already exists!' })
-    @ApiBadRequestResponse({ description: 'Validation Error' })
+    @ApiCreatedResponse({ description: 'OK' })
+    @ApiConflictResponse({ description: 'User already exists!', type: ConflictSwagger })
+    @ApiBadRequestResponse({ description: 'Validation Error', type: BadRequestSwagger })
     @Post('signup')
     createUser(
         @Body(ValidationPipe) createUserDto: CreateUserDto
@@ -21,8 +25,9 @@ export class AuthController {
     }
 
     @ApiOperation({ summary: 'User Signin' })
-    @ApiNotFoundResponse({ description: 'User not found!' })
-    @ApiBadRequestResponse({ description: 'Invalid credentials!' })
+    @ApiOkResponse({ description: 'OK' })
+    @ApiNotFoundResponse({ description: 'User not found!', type: NotFoundSwagger })
+    @ApiBadRequestResponse({ description: 'Invalid credentials!', type: BadRequestSwagger })
     @HttpCode(HttpStatus.OK)
     @Post('signin')
     getUser(
