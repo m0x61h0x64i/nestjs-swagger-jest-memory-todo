@@ -14,7 +14,7 @@ export class AuthController {
     constructor(private authService: AuthService) { }
     
     @ApiOperation({ summary: 'User Signup' })
-    @ApiCreatedResponse({ description: 'OK' })
+    @ApiCreatedResponse({ description: 'OK', type: User })
     @ApiConflictResponse({ description: 'User already exists!', type: ConflictSwagger })
     @ApiBadRequestResponse({ description: 'Validation Error', type: BadRequestSwagger })
     @Post('signup')
@@ -25,7 +25,7 @@ export class AuthController {
     }
 
     @ApiOperation({ summary: 'User Signin' })
-    @ApiOkResponse({ description: 'OK' })
+    @ApiOkResponse({ description: 'OK', type: User })
     @ApiNotFoundResponse({ description: 'User not found!', type: NotFoundSwagger })
     @ApiBadRequestResponse({ description: 'Invalid credentials!', type: BadRequestSwagger })
     @HttpCode(HttpStatus.OK)

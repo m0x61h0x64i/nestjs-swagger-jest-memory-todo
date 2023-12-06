@@ -6,55 +6,39 @@ import { CreateTaskDto } from './dto/create-tasks.dto';
 import { GetTasksFilterDto } from './dto/get-tasks.dto';
 import { UpdateTasksStatusDto } from './dto/update-tasks-status.dto';
 import { User } from 'src/auth/user.entity';
+import { TasksRepository } from './tasks.repository';
 
 @Injectable()
 export class TasksService {
-    private tasks: Task[] = [];
+    constructor(private tasksRepository: TasksRepository) {}
 
     getTaskById(id: string, user: User): Task {
-        const task: Task | undefined = this.tasks.find(
-            (task) => task.id === id && task.userId === user.id,
-        );
+        const userTask: Task | undefined = this.tasksRepository.getTaskById(id, user)
 
-        if (!task) {
+        if (!userTask) {
             throw new NotFoundException('Task Not Found!');
         }
 
-        return task;
+        return userTask;
     }
 
     getAllTasks(user: User): Task[] {
-        return this.tasks.filter((task) => task.userId === user.id);
+        return this.tasksRepository.getAllTasks(user)
     }
 
     getTasksByFilter(
         getTasksDto: GetTasksFilterDto,
         user: User
     ): Task[] {
-        const { search, status } = getTasksDto;
-
-        let tasks: Task[] = this.getAllTasks(user);
-
-        if (search) {
-            tasks = tasks.filter(
-                (task) =>
-                    task.title.includes(search) ||
-                    task.description.includes(search),
-            );
-        }
-
-        if (status) {
-            tasks = tasks.filter((task) => task.status === status);
-        }
-
-        return tasks;
+        const userTasks: Task[] = this.getAllTasks(user)
+        return this.tasksRepository.getTasksByFilter(userTasks, getTasksDto)
     }
 
     createTask(
         createTaskDto: CreateTaskDto,
         user: User
     ): Task {
-        const { title, description }: CreateTaskDto = createTaskDto;
+        const { title, description } = createTaskDto;
 
         const newTask: Task = {
             id: uuidv4(),
@@ -63,15 +47,15 @@ export class TasksService {
             description,
             status: TasksStatus.OPEN,
         };
-        this.tasks.push(newTask);
+
+        this.tasksRepository.createTask(newTask);
 
         return newTask;
     }
 
     deleteTask(id: string, user: User): void {
-        const foundTask: Task = this.getTaskById(id, user);
-
-        this.tasks = this.tasks.filter((task) => task.id !== foundTask.id);
+        const userTask: Task = this.getTaskById(id, user);
+        this.tasksRepository.deleteTask(userTask.id)
     }
 
     updateTaskStatus(
@@ -79,18 +63,10 @@ export class TasksService {
         updateTasksStatusDto: UpdateTasksStatusDto,
         user: User
     ): Task {
-        const { status }: UpdateTasksStatusDto = updateTasksStatusDto;
-        const task: Task = this.getTaskById(id, user);
-        const taskIndex: number = this.tasks.findIndex(
-            (task) => task.id === id,
-        );
+        const userTask: Task = this.getTaskById(id, user);
 
-        if (!task) {
-            throw new NotFoundException('Task Not Found!')
-        }
+        this.tasksRepository.updateTaskStatus(userTask.id, updateTasksStatusDto)
 
-        task.status = status;
-        this.tasks.splice(taskIndex, 1, task);
-        return task;
+        return { ...userTask, ...updateTasksStatusDto };
     }
 }
