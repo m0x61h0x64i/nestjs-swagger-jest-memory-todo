@@ -5,15 +5,31 @@ import { v4 as uuidv4 } from 'uuid';
 import { CreateTaskDto } from './dto/create-tasks.dto';
 import { GetTasksFilterDto } from './dto/get-tasks.dto';
 import { UpdateTasksStatusDto } from './dto/update-tasks-status.dto';
-import { User } from 'src/auth/user.entity';
 import { TasksRepository } from './tasks.repository';
 
 @Injectable()
 export class TasksService {
     constructor(private tasksRepository: TasksRepository) {}
 
-    getTaskById(id: string, user: User): Task {
-        const userTask: Task | undefined = this.tasksRepository.getTaskById(id, user)
+    async createTask(
+        createTaskDto: CreateTaskDto,
+        userId: string
+    ): Promise<Task> {
+        const { title, description } = createTaskDto;
+
+        const newTask: Task = {
+            id: uuidv4(),
+            userId,
+            title,
+            description,
+            status: TasksStatus.OPEN,
+        };
+
+        return await this.tasksRepository.createOne(newTask);
+    }
+
+    async getTaskById(id: string, userId: string): Promise<Task> {
+        const userTask: Task | undefined = await this.tasksRepository.findOne(id, userId)
 
         if (!userTask) {
             throw new NotFoundException('Task Not Found!');
@@ -22,50 +38,31 @@ export class TasksService {
         return userTask;
     }
 
-    getAllTasks(user: User): Task[] {
-        return this.tasksRepository.getAllTasks(user)
+    async getAllTasks(userId: string): Promise<Task[]> {
+        return await this.tasksRepository.findMany(userId)
     }
 
-    getTasksByFilter(
+    async getTasksByFilter(
         getTasksDto: GetTasksFilterDto,
-        user: User
-    ): Task[] {
-        const userTasks: Task[] = this.getAllTasks(user)
-        return this.tasksRepository.getTasksByFilter(userTasks, getTasksDto)
+        userId: string
+    ): Promise<Task[]> {
+        const userTasks: Task[] = await this.getAllTasks(userId)
+        return await this.tasksRepository.search(userTasks, getTasksDto)
     }
 
-    createTask(
-        createTaskDto: CreateTaskDto,
-        user: User
-    ): Task {
-        const { title, description } = createTaskDto;
-
-        const newTask: Task = {
-            id: uuidv4(),
-            userId: user.id,
-            title,
-            description,
-            status: TasksStatus.OPEN,
-        };
-
-        this.tasksRepository.createTask(newTask);
-
-        return newTask;
+    async deleteTask(id: string, userId: string): Promise<void> {
+        const userTask: Task = await this.getTaskById(id, userId);
+        await this.tasksRepository.deleteOne(userTask.id)
     }
 
-    deleteTask(id: string, user: User): void {
-        const userTask: Task = this.getTaskById(id, user);
-        this.tasksRepository.deleteTask(userTask.id)
-    }
-
-    updateTaskStatus(
+    async updateTaskStatus(
         id: string,
         updateTasksStatusDto: UpdateTasksStatusDto,
-        user: User
-    ): Task {
-        const userTask: Task = this.getTaskById(id, user);
+        userId: string
+    ): Promise<Task> {
+        const userTask: Task = await this.getTaskById(id, userId);
 
-        this.tasksRepository.updateTaskStatus(userTask.id, updateTasksStatusDto)
+        await this.tasksRepository.updateOne(userTask.id, updateTasksStatusDto)
 
         return { ...userTask, ...updateTasksStatusDto };
     }

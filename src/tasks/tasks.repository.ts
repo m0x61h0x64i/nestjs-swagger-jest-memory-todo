@@ -1,22 +1,27 @@
 import { Injectable } from "@nestjs/common";
 import { Task } from "./task.entity";
-import { User } from "src/auth/user.entity";
 import { GetTasksFilterDto } from "./dto/get-tasks.dto";
 import { UpdateTasksStatusDto } from "./dto/update-tasks-status.dto";
+import { ITasksRepository } from "./memory.repository.interface";
 
 @Injectable()
-export class TasksRepository {
+export class TasksRepository implements ITasksRepository {
     private tasks: Task[] = [];
 
-    getTaskById(id: string, user: User): Task | undefined {
-        return this.tasks.find((task) => task.id === id && user.id === task.userId)
+    async createOne(newTask: Task): Promise<Task> {
+        this.tasks.push(newTask)
+        return Promise.resolve(newTask)
     }
 
-    getAllTasks(user: User): Task[] {
-        return this.tasks.filter((task) => task.userId === user.id)
+    async findOne(id: string, userId: string): Promise<Task | undefined> {
+        return Promise.resolve(this.tasks.find((task) => task.id === id && userId === task.userId))
     }
 
-    getTasksByFilter(userTasks: Task[], getTasksDto: GetTasksFilterDto): Task[] {
+    async findMany(userId: string): Promise<Task[]> {
+        return Promise.resolve(this.tasks.filter((task) => task.userId === userId))
+    }
+
+    async search(userTasks: Task[], getTasksDto: GetTasksFilterDto): Promise<Task[]> {
         const { search, status } = getTasksDto
 
         let tasks: Task[] = userTasks
@@ -33,18 +38,14 @@ export class TasksRepository {
             tasks = this.tasks.filter((task) => task.status === status);
         }
 
-        return tasks
+        return Promise.resolve(tasks)
     }
 
-    createTask(newTask: Task): void {
-        this.tasks.push(newTask)
-    }
-
-    deleteTask(id: string): void {
+    async deleteOne(id: string): Promise<void> {
         this.tasks = this.tasks.filter((task) => task.id !== id);
     }
 
-    updateTaskStatus(id: string, updateTasksStatusDto: UpdateTasksStatusDto): void {
+    async updateOne(id: string, updateTasksStatusDto: UpdateTasksStatusDto): Promise<void> {
         const { status } = updateTasksStatusDto;
         this.tasks = this.tasks.map((task) => task.id === id ? { ...task, status } : task)
     }

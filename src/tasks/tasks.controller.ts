@@ -20,10 +20,10 @@ import { GetTasksFilterDto } from './dto/get-tasks.dto';
 import { UpdateTasksStatusDto } from './dto/update-tasks-status.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { GetUser } from 'src/auth/get-user.decorator';
-import { User } from 'src/auth/user.entity';
-import { NotFoundSwagger } from 'src/swagger/not-found.swagger';
-import { BadRequestSwagger } from 'src/swagger/bad-request.swagger';
+import { User } from "../auth/user.entity";
+import { NotFoundSwagger } from '../swagger/not-found.swagger';
+import { BadRequestSwagger } from '../swagger/bad-request.swagger';
+import { GetUser } from '../auth/get-user.decorator';
 
 @ApiTags('Tasks')
 @ApiBearerAuth('User Access Token')
@@ -32,60 +32,69 @@ import { BadRequestSwagger } from 'src/swagger/bad-request.swagger';
 export class TasksController {
     constructor(private tasksService: TasksService) { }
 
-    @ApiOperation({ summary: 'Get Tasks' })
-    @ApiOkResponse({ description: 'OK', type: Task, isArray: true })
-    @Get()
-    getTasks(
-        @Query(ValidationPipe) getTasksDto: GetTasksFilterDto,
-        @GetUser() user: User
-    ): Task[] {
-        return this.tasksService.getTasksByFilter(getTasksDto, user);
-    }
-
-    @ApiOperation({ summary: 'Get Task' })
-    @ApiOkResponse({ description: 'OK', type: Task })
-    @ApiNotFoundResponse({ description: 'Task Not Found!', type: NotFoundSwagger })
-    @Get(':id')
-    getTaskById(
-        @Param('id') id: string,
-        @GetUser() user: User    
-    ): Task {
-        return this.tasksService.getTaskById(id, user);
-    }
-
-    @ApiOperation({ summary: 'Create Task' })
+    @ApiOperation({ summary: 'Create a task' })
     @ApiCreatedResponse({ description: 'OK', type: Task })
     @ApiBadRequestResponse({ description: 'Validation Error', type: BadRequestSwagger })
     @Post()
     @UsePipes(ValidationPipe)
-    createTask(
+    async createTask(
         @Body() createTaskDto: CreateTaskDto,
         @GetUser() user: User
-    ): Task {
-        return this.tasksService.createTask(createTaskDto, user);
+    ): Promise<Task> {
+        return await this.tasksService.createTask(createTaskDto, user.id);
     }
 
-    @ApiOperation({ summary: 'Delete Task' })
+    @ApiOperation({ summary: 'Get a task by id' })
+    @ApiOkResponse({ description: 'OK', type: Task })
+    @ApiNotFoundResponse({ description: 'Task Not Found!', type: NotFoundSwagger })
+    @Get(':id')
+    async getTaskById(
+        @Param('id') id: string,
+        @GetUser() user: User
+    ): Promise<Task> {
+        return await this.tasksService.getTaskById(id, user.id);
+    }
+
+    @ApiOperation({ summary: 'Get all tasks' })
+    @ApiOkResponse({ description: 'OK', type: Task, isArray: true })
+    @Get()
+    async getAllTasks(
+        @GetUser() user: User
+    ): Promise<Task[]> {
+        return await this.tasksService.getAllTasks(user.id);
+    }
+
+    @ApiOperation({ summary: 'Search tasks' })
+    @ApiOkResponse({ description: 'OK', type: Task, isArray: true })
+    @Get('search')
+    async getTasksByFilter(
+        @Query(ValidationPipe) getTasksFilterDto: GetTasksFilterDto,
+        @GetUser() user: User
+    ): Promise<Task[]> {
+        return await this.tasksService.getTasksByFilter(getTasksFilterDto, user.id);
+    }
+
+    @ApiOperation({ summary: 'Delete a task' })
     @ApiNoContentResponse({ description: 'OK' })
     @ApiNotFoundResponse({ description: 'Task Not Found!', type: NotFoundSwagger })
     @HttpCode(HttpStatus.NO_CONTENT)
     @Delete(':id')
-    deleteTask(
+    async deleteTask(
         @Param('id') id: string,
         @GetUser() user: User
-    ): void {
-        this.tasksService.deleteTask(id, user);
+    ): Promise<void> {
+        await this.tasksService.deleteTask(id, user.id);
     }
 
-    @ApiOperation({ summary: 'Update Task' })
+    @ApiOperation({ summary: 'Update a task' })
     @ApiBadRequestResponse({ description: 'Validation Error', type: BadRequestSwagger })
     @ApiOkResponse({ description: 'OK', type: Task })
     @Patch(':id/status')
-    updateTaskStatus(
+    async updateTaskStatus(
         @Param('id') id: string,
         @Body('status') updateTasksStatusDto: UpdateTasksStatusDto,
         @GetUser() user: User
-    ): Task {
-        return this.tasksService.updateTaskStatus(id, updateTasksStatusDto, user);
+    ): Promise<Task> {
+        return await this.tasksService.updateTaskStatus(id, updateTasksStatusDto, user.id);
     }
 }

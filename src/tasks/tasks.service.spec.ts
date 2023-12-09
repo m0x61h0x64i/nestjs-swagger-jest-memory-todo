@@ -15,16 +15,16 @@ const mockTask: Task = { id: 'task1', userId: 'user1', title: 'title', descripti
 describe('TasksService', () => {
     let tasksService: TasksService;
     let tasksRepository: TasksRepository;
-    
+
     const mockTasksRepository = {
-        getTaskById: jest.fn(),
-        getTasksByFilter: jest.fn(),
-        getAllTasks: jest.fn(),
-        createTask: jest.fn(),
-        deleteTask: jest.fn(),
-        updateTaskStatus: jest.fn()
+        createOne: jest.fn(),
+        findOne: jest.fn(),
+        findMany: jest.fn(),
+        search: jest.fn(),
+        deleteOne: jest.fn(),
+        updateOne: jest.fn()
     }
-    
+
     beforeEach(async () => {
         const testingModule: TestingModule = await Test.createTestingModule({
             providers: [
@@ -40,84 +40,80 @@ describe('TasksService', () => {
         tasksRepository = testingModule.get<TasksRepository>(TasksRepository)
     })
 
-    describe('getTaskById', () => {
-        it('should return a task by id when found', () => {
-            jest.spyOn(tasksRepository, 'getTaskById').mockReturnValue(mockTask)
-            const result = tasksService.getTaskById(mockTask.id, mockUser)
-            expect(result).toEqual(mockTask)
-            expect(tasksRepository.getTaskById).toHaveBeenCalled()
-        })
-
-        it('show throw error when task not found', () => {
-            jest.spyOn(tasksRepository, 'getTaskById').mockReturnValue(undefined)
-            expect(() => tasksService.getTaskById(mockTask.id, mockUser)).toThrow(NotFoundException)
-            expect(tasksRepository.getTaskById).toHaveBeenCalled()
+    describe('createTask', () => {
+        it('should create a task', async () => {
+            const createTaskDto: CreateTaskDto = { title: 'some title', description: 'some description' }
+            jest.spyOn(tasksRepository, 'createOne').mockResolvedValue(mockTask)
+            await expect(tasksService.createTask(createTaskDto, mockUser.id)).resolves.toStrictEqual(mockTask)
+            expect(tasksRepository.createOne).toHaveBeenCalled()
         })
     })
 
+    describe('getTaskById', () => {
+        it('should return a task', async () => {
+            jest.spyOn(tasksRepository, 'findOne').mockResolvedValue(mockTask)
+            await expect(tasksService.getTaskById(mockTask.id, mockUser.id)).resolves.toStrictEqual(mockTask)
+            expect(tasksRepository.findOne).toHaveBeenCalled()
+        })
+
+        it('should throw not found error', async () => {
+            jest.spyOn(tasksRepository, 'findOne').mockResolvedValue(undefined)
+            await expect(tasksService.getTaskById(mockTask.id, mockUser.id)).rejects.toThrow(NotFoundException)
+            expect(tasksRepository.findOne).toHaveBeenCalled()
+        })
+    })
+    
     describe('getAllTasks', () => {
-        it('should return all tasks', () => {
-            jest.spyOn(tasksRepository, 'getAllTasks').mockReturnValue([mockTask])
-            const result = tasksService.getAllTasks(mockUser)
-            expect(result).toEqual([mockTask])
-            expect(tasksRepository.getAllTasks).toHaveBeenCalled()
+        it('should return all tasks', async () => {
+            jest.spyOn(tasksRepository, 'findMany').mockResolvedValue([mockTask])
+            await expect(tasksService.getAllTasks(mockUser.id)).resolves.toStrictEqual([mockTask])
+            expect(tasksRepository.findMany).toHaveBeenCalled()
         })
     })
 
     describe('getTasksByFilter', () => {
-        it('should return tasks by filter', () => {
-            jest.spyOn(tasksService, 'getAllTasks').mockReturnValue([mockTask])
-            jest.spyOn(tasksRepository, 'getTasksByFilter').mockReturnValue([mockTask])
+        it('should return tasks by filter', async () => {
+            jest.spyOn(tasksService, 'getAllTasks').mockResolvedValue([mockTask])
+            jest.spyOn(tasksRepository, 'search').mockResolvedValue([mockTask])
             const filter: GetTasksFilterDto = { search: 'title', status: TasksStatus.OPEN }
-            const result = tasksService.getTasksByFilter(filter, mockUser)
-            expect(result).toEqual([mockTask])
+            await expect(tasksService.getTasksByFilter(filter, mockUser.id)).resolves.toStrictEqual([mockTask])
             expect(tasksService.getAllTasks).toHaveBeenCalled()
-            expect(tasksRepository.getTasksByFilter).toHaveBeenCalled()
-        })
-    })
-
-    describe('createTask', () => {
-        it('should create a task', () => {
-            const createTaskDto: CreateTaskDto = { title: 'some title', description: 'some description' }
-            jest.spyOn(tasksRepository, 'createTask').mockImplementation()
-            const result = tasksService.createTask(createTaskDto, mockUser)
-            expect(result).toMatchObject(createTaskDto)
-            expect(tasksRepository.createTask).toHaveBeenCalled()
+            expect(tasksRepository.search).toHaveBeenCalled()
         })
     })
 
     describe('deleteTask', () => {
-        it('should delete task when found', () => {
-            jest.spyOn(tasksService, 'getTaskById').mockReturnValue(mockTask)
-            jest.spyOn(tasksRepository, 'deleteTask').mockImplementation()
-            tasksService.deleteTask(mockTask.id, mockUser)
+        it('should delete task when found', async () => {
+            jest.spyOn(tasksService, 'getTaskById').mockResolvedValue(mockTask)
+            jest.spyOn(tasksRepository, 'deleteOne').mockResolvedValue(undefined)
+            await tasksService.deleteTask(mockTask.id, mockUser.id)
             expect(tasksService.getTaskById).toHaveBeenCalled()
-            expect(tasksRepository.deleteTask).toHaveBeenCalled()
+            expect(tasksRepository.deleteOne).toHaveBeenCalled()
         })
 
-        it('should throw error when task not found', () => {
-            jest.spyOn(tasksRepository, 'getTaskById').mockReturnValue(undefined)
-            expect(() => tasksService.deleteTask('randomId', mockUser)).toThrow(NotFoundException)
-            expect(tasksRepository.getTaskById).toHaveBeenCalled()
+        it('should throw error when task not found', async () => {
+            jest.spyOn(tasksRepository, 'findOne').mockResolvedValue(undefined)
+            await expect(tasksService.deleteTask('randomId', mockUser.id)).rejects.toThrow(NotFoundException)
+            expect(tasksRepository.findOne).toHaveBeenCalled()
         })
     })
 
     describe('updateTaskStatus', () => {
         const updateTasksStatusDto: UpdateTasksStatusDto = { status: TasksStatus.DONE }
 
-        it('should update task status when found', () => {
-            jest.spyOn(tasksService, 'getTaskById').mockReturnValue(mockTask)
-            jest.spyOn(tasksRepository, 'updateTaskStatus').mockImplementation()
-            const result = tasksService.updateTaskStatus(mockTask.id, updateTasksStatusDto, mockUser)
-            expect(result.status).toBe(updateTasksStatusDto.status)
+        it('should update task status when found', async () => {
+            jest.spyOn(tasksService, 'getTaskById').mockResolvedValue(mockTask)
+            jest.spyOn(tasksRepository, 'updateOne').mockResolvedValue(undefined)
+            const result = await tasksService.updateTaskStatus(mockTask.id, updateTasksStatusDto, mockUser.id)
+            expect(result.status).toStrictEqual(updateTasksStatusDto.status)
             expect(tasksService.getTaskById).toHaveBeenCalled()
-            expect(tasksRepository.updateTaskStatus).toHaveBeenCalled()
+            expect(tasksRepository.updateOne).toHaveBeenCalled()
         })
 
-        it('should throw error when task not found', () => {
-            jest.spyOn(tasksRepository, 'getTaskById').mockReturnValue(undefined)
-            expect(() => tasksService.updateTaskStatus('randomId', updateTasksStatusDto, mockUser)).toThrow(NotFoundException)
-            expect(tasksRepository.getTaskById).toHaveBeenCalled()
+        it('should throw error when task not found', async () => {
+            jest.spyOn(tasksRepository, 'findOne').mockResolvedValue(undefined)
+            await expect(tasksService.updateTaskStatus('randomId', updateTasksStatusDto, mockUser.id)).rejects.toThrow(NotFoundException)
+            expect(tasksRepository.findOne).toHaveBeenCalled()
         })
     })
 })
