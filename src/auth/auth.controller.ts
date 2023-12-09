@@ -13,7 +13,7 @@ import { NotFoundSwagger } from '../swagger/not-found.swagger';
 export class AuthController {
     constructor(private authService: AuthService) { }
 
-    @ApiOperation({ summary: 'User Signup' })
+    @ApiOperation({ summary: 'User signup' })
     @ApiCreatedResponse({ description: 'OK', type: User })
     @ApiConflictResponse({ description: 'User already exists!', type: ConflictSwagger })
     @ApiBadRequestResponse({ description: 'Validation Error', type: BadRequestSwagger })
@@ -24,7 +24,7 @@ export class AuthController {
         return await this.authService.signup(createUserDto)
     }
 
-    @ApiOperation({ summary: 'User Signin' })
+    @ApiOperation({ summary: 'User signin' })
     @ApiOkResponse({ description: 'OK', type: User })
     @ApiNotFoundResponse({ description: 'User not found!', type: NotFoundSwagger })
     @ApiBadRequestResponse({ description: 'Invalid credentials!', type: BadRequestSwagger })

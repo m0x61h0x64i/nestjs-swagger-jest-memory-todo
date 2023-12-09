@@ -86,7 +86,7 @@ export class TasksController {
         await this.tasksService.deleteTask(id, user.id);
     }
 
-    @ApiOperation({ summary: 'Update a task' })
+    @ApiOperation({ summary: 'Update a task status' })
     @ApiBadRequestResponse({ description: 'Validation Error', type: BadRequestSwagger })
     @ApiOkResponse({ description: 'OK', type: Task })
     @Patch(':id/status')
