@@ -4,9 +4,10 @@ import { AuthRepository } from "./auth.repository"
 import { User } from "./user.entity"
 import { JwtService } from "@nestjs/jwt"
 import { BadRequestException, ConflictException, NotFoundException } from "@nestjs/common"
-import * as bcrypt from 'bcrypt'
+import bcrypt from 'bcrypt'
 import { CreateUserDto } from "./dto/create-user.dto"
 import { GetUserDto } from "./dto/get-user.dto"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const mockUser: User = { id: 'user1', username: 'username', password: 'password', token: 'token' }
 
@@ -16,8 +17,8 @@ describe('AuthService', () => {
     let jwtService: JwtService
 
     const mockAuthRepository = {
-        createOne: jest.fn(),
-        findOne: jest.fn()
+        createOne: vi.fn(),
+        findOne: vi.fn()
     }
 
     beforeEach(async () => {
@@ -41,10 +42,10 @@ describe('AuthService', () => {
         const createUserDto: CreateUserDto = { username: 'username', password: 'password' }
 
         it('should signup new user', async () => {
-            jest.spyOn(authRepository, 'findOne').mockResolvedValue(undefined)
-            jest.spyOn(authRepository, 'createOne').mockResolvedValue(mockUser)
+            vi.spyOn(authRepository, 'findOne').mockResolvedValue(undefined)
+            vi.spyOn(authRepository, 'createOne').mockResolvedValue(mockUser)
             // This line may wrong
-            jest.spyOn(jwtService, 'sign').mockReturnValue('token')
+            vi.spyOn(jwtService, 'sign').mockReturnValue('token')
             await expect(authService.signup(createUserDto)).resolves.toStrictEqual(mockUser)
             expect(authRepository.findOne).toHaveBeenCalled()
             expect(authRepository.createOne).toHaveBeenCalled()
@@ -52,7 +53,7 @@ describe('AuthService', () => {
         })
 
         it('should throw conflict error', async () => {
-            jest.spyOn(authRepository, 'findOne').mockResolvedValue(mockUser)
+            vi.spyOn(authRepository, 'findOne').mockResolvedValue(mockUser)
             await expect(authService.signup(createUserDto)).rejects.toThrow(ConflictException)
             expect(authRepository.findOne).toHaveBeenCalled()
         })
@@ -62,10 +63,10 @@ describe('AuthService', () => {
         const getUserDto: GetUserDto = { password: 'password', username: 'username' }
 
         it('should signin', async () => {
-            jest.spyOn(authRepository, 'findOne').mockResolvedValue(mockUser)
-            jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(true))
+            vi.spyOn(authRepository, 'findOne').mockResolvedValue(mockUser)
+            vi.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(true))
             // This line may wrong
-            jest.spyOn(jwtService, 'sign').mockReturnValue('token')
+            vi.spyOn(jwtService, 'sign').mockReturnValue('token')
             await expect(authService.signin(getUserDto)).resolves.toStrictEqual(mockUser)
             expect(authRepository.findOne).toHaveBeenCalled()
             expect(bcrypt.compare).toHaveBeenCalled()
@@ -73,14 +74,14 @@ describe('AuthService', () => {
         })
 
         it('should throw not found error', async () => {
-            jest.spyOn(authRepository, 'findOne').mockResolvedValue(undefined)
+            vi.spyOn(authRepository, 'findOne').mockResolvedValue(undefined)
             await expect(authService.signin(getUserDto)).rejects.toThrow(NotFoundException)
             expect(authRepository.findOne).toHaveBeenCalled()
         })
 
         it('should throw bad request error', async () => {
-            jest.spyOn(authRepository, 'findOne').mockResolvedValue(mockUser)
-            jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(false))
+            vi.spyOn(authRepository, 'findOne').mockResolvedValue(mockUser)
+            vi.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(false))
             await expect(authService.signin(getUserDto)).rejects.toThrow(BadRequestException)
             expect(authRepository.findOne).toHaveBeenCalled()
             expect(bcrypt.compare).toHaveBeenCalled()

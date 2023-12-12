@@ -8,6 +8,7 @@ import { User } from "../auth/user.entity"
 import { PassportModule } from "@nestjs/passport"
 import { CreateTaskDto } from "./dto/create-tasks.dto"
 import { UpdateTasksStatusDto } from "./dto/update-tasks-status.dto"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const mockUser: User = { id: 'user1', username: 'username', password: 'password', token: 'token' }
 const mockTask: Task = { id: 'task1', userId: 'user1', title: 'title', description: 'description', status: TasksStatus.OPEN }
@@ -17,12 +18,12 @@ describe('TasksController', () => {
     let tasksService: TasksService
 
     const mockTasksService = {
-        createTask: jest.fn(),
-        getTaskById: jest.fn(),
-        getAllTasks: jest.fn(),
-        getTasksByFilter: jest.fn(),
-        deleteTask: jest.fn(),
-        updateTaskStatus: jest.fn()
+        createTask: vi.fn(),
+        getTaskById: vi.fn(),
+        getAllTasks: vi.fn(),
+        getTasksByFilter: vi.fn(),
+        deleteTask: vi.fn(),
+        updateTaskStatus: vi.fn()
     }
 
     beforeEach(async () => {
@@ -44,7 +45,7 @@ describe('TasksController', () => {
     describe('Post | /tasks | Create a task', () => {
         it('should create a task', async () => {
             const createTaskDto: CreateTaskDto = { description: 'description', title: 'title' }
-            jest.spyOn(tasksService, 'createTask').mockResolvedValue(mockTask)
+            vi.spyOn(tasksService, 'createTask').mockResolvedValue(mockTask)
             await expect(tasksController.createTask(createTaskDto, mockUser)).resolves.toStrictEqual(mockTask)
             expect(tasksService.createTask).toHaveBeenCalled()
         })
@@ -52,7 +53,7 @@ describe('TasksController', () => {
 
     describe('GET | /tasks/{id} | Get a task by id', () => {
         it('should return a task by id', async () => {
-            jest.spyOn(tasksService, 'getTaskById').mockResolvedValue(mockTask)
+            vi.spyOn(tasksService, 'getTaskById').mockResolvedValue(mockTask)
             await expect(tasksController.getTaskById(mockTask.id, mockUser)).resolves.toStrictEqual(mockTask)
             expect(tasksService.getTaskById).toHaveBeenCalled()
         })
@@ -60,7 +61,7 @@ describe('TasksController', () => {
 
     describe('GET | /tasks | Get all tasks', () => {
         it('should return all tasks', async () => {
-            jest.spyOn(tasksService, 'getAllTasks').mockResolvedValue([mockTask])
+            vi.spyOn(tasksService, 'getAllTasks').mockResolvedValue([mockTask])
             await expect(tasksController.getAllTasks(mockUser)).resolves.toStrictEqual([mockTask])
             expect(tasksService.getAllTasks).toHaveBeenCalled()
         })
@@ -69,7 +70,7 @@ describe('TasksController', () => {
     describe('GET | /tasks/search | Search tasks', () => {
         it('should return tasks by filter', async () => {
             const getTasksFilterDto: GetTasksFilterDto = { search: 'search', status: TasksStatus.OPEN }
-            jest.spyOn(tasksService, 'getTasksByFilter').mockResolvedValue([mockTask])
+            vi.spyOn(tasksService, 'getTasksByFilter').mockResolvedValue([mockTask])
             await expect(tasksController.getTasksByFilter(getTasksFilterDto, mockUser)).resolves.toStrictEqual([mockTask])
             expect(tasksService.getTasksByFilter).toHaveBeenCalled()
         })
@@ -77,7 +78,7 @@ describe('TasksController', () => {
 
     describe('Delete | /tasks/{id} | Delete Task', () => {
         it('should delete a task', async () => {
-            jest.spyOn(tasksService, 'deleteTask').mockImplementation()
+            vi.spyOn(tasksService, 'deleteTask').mockImplementation(() => Promise.resolve())
             await tasksController.deleteTask(mockTask.id, mockUser)
             expect(tasksService.deleteTask).toHaveBeenCalled()
         })
@@ -86,7 +87,7 @@ describe('TasksController', () => {
     describe('Patch | /tasks/{id}/status | Update Task Status By Id', () => {
         it('should update a task status by id', async () => {
             const updateTasksStatusDto: UpdateTasksStatusDto = { status: TasksStatus.DONE }
-            jest.spyOn(tasksService, 'updateTaskStatus').mockResolvedValue(mockTask)
+            vi.spyOn(tasksService, 'updateTaskStatus').mockResolvedValue(mockTask)
             await expect(tasksController.updateTaskStatus(mockTask.id, updateTasksStatusDto, mockUser)).resolves.toStrictEqual(mockTask)
             expect(tasksService.updateTaskStatus).toHaveBeenCalled()
         })

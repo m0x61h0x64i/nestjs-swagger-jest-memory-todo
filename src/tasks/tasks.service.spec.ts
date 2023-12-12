@@ -8,6 +8,7 @@ import { GetTasksFilterDto } from "./dto/get-tasks.dto"
 import { CreateTaskDto } from "./dto/create-tasks.dto"
 import { UpdateTasksStatusDto } from "./dto/update-tasks-status.dto"
 import { TasksRepository } from "./tasks.repository"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const mockUser: User = { id: 'user1', username: 'username', password: 'password', token: 'token' }
 const mockTask: Task = { id: 'task1', userId: 'user1', title: 'title', description: 'description', status: TasksStatus.OPEN }
@@ -17,12 +18,12 @@ describe('TasksService', () => {
     let tasksRepository: TasksRepository;
 
     const mockTasksRepository = {
-        createOne: jest.fn(),
-        findOne: jest.fn(),
-        findMany: jest.fn(),
-        search: jest.fn(),
-        deleteOne: jest.fn(),
-        updateOne: jest.fn()
+        createOne: vi.fn(),
+        findOne: vi.fn(),
+        findMany: vi.fn(),
+        search: vi.fn(),
+        deleteOne: vi.fn(),
+        updateOne: vi.fn()
     }
 
     beforeEach(async () => {
@@ -43,7 +44,7 @@ describe('TasksService', () => {
     describe('createTask', () => {
         it('should create a task', async () => {
             const createTaskDto: CreateTaskDto = { title: 'some title', description: 'some description' }
-            jest.spyOn(tasksRepository, 'createOne').mockResolvedValue(mockTask)
+            vi.spyOn(tasksRepository, 'createOne').mockResolvedValue(mockTask)
             await expect(tasksService.createTask(createTaskDto, mockUser.id)).resolves.toStrictEqual(mockTask)
             expect(tasksRepository.createOne).toHaveBeenCalled()
         })
@@ -51,13 +52,13 @@ describe('TasksService', () => {
 
     describe('getTaskById', () => {
         it('should return a task', async () => {
-            jest.spyOn(tasksRepository, 'findOne').mockResolvedValue(mockTask)
+            vi.spyOn(tasksRepository, 'findOne').mockResolvedValue(mockTask)
             await expect(tasksService.getTaskById(mockTask.id, mockUser.id)).resolves.toStrictEqual(mockTask)
             expect(tasksRepository.findOne).toHaveBeenCalled()
         })
 
         it('should throw not found error', async () => {
-            jest.spyOn(tasksRepository, 'findOne').mockResolvedValue(undefined)
+            vi.spyOn(tasksRepository, 'findOne').mockResolvedValue(undefined)
             await expect(tasksService.getTaskById(mockTask.id, mockUser.id)).rejects.toThrow(NotFoundException)
             expect(tasksRepository.findOne).toHaveBeenCalled()
         })
@@ -65,7 +66,7 @@ describe('TasksService', () => {
     
     describe('getAllTasks', () => {
         it('should return all tasks', async () => {
-            jest.spyOn(tasksRepository, 'findMany').mockResolvedValue([mockTask])
+            vi.spyOn(tasksRepository, 'findMany').mockResolvedValue([mockTask])
             await expect(tasksService.getAllTasks(mockUser.id)).resolves.toStrictEqual([mockTask])
             expect(tasksRepository.findMany).toHaveBeenCalled()
         })
@@ -73,8 +74,8 @@ describe('TasksService', () => {
 
     describe('getTasksByFilter', () => {
         it('should return tasks by filter', async () => {
-            jest.spyOn(tasksService, 'getAllTasks').mockResolvedValue([mockTask])
-            jest.spyOn(tasksRepository, 'search').mockResolvedValue([mockTask])
+            vi.spyOn(tasksService, 'getAllTasks').mockResolvedValue([mockTask])
+            vi.spyOn(tasksRepository, 'search').mockResolvedValue([mockTask])
             const filter: GetTasksFilterDto = { search: 'title', status: TasksStatus.OPEN }
             await expect(tasksService.getTasksByFilter(filter, mockUser.id)).resolves.toStrictEqual([mockTask])
             expect(tasksService.getAllTasks).toHaveBeenCalled()
@@ -84,15 +85,15 @@ describe('TasksService', () => {
 
     describe('deleteTask', () => {
         it('should delete task when found', async () => {
-            jest.spyOn(tasksService, 'getTaskById').mockResolvedValue(mockTask)
-            jest.spyOn(tasksRepository, 'deleteOne').mockResolvedValue(undefined)
+            vi.spyOn(tasksService, 'getTaskById').mockResolvedValue(mockTask)
+            vi.spyOn(tasksRepository, 'deleteOne').mockResolvedValue(undefined)
             await tasksService.deleteTask(mockTask.id, mockUser.id)
             expect(tasksService.getTaskById).toHaveBeenCalled()
             expect(tasksRepository.deleteOne).toHaveBeenCalled()
         })
 
         it('should throw error when task not found', async () => {
-            jest.spyOn(tasksRepository, 'findOne').mockResolvedValue(undefined)
+            vi.spyOn(tasksRepository, 'findOne').mockResolvedValue(undefined)
             await expect(tasksService.deleteTask('randomId', mockUser.id)).rejects.toThrow(NotFoundException)
             expect(tasksRepository.findOne).toHaveBeenCalled()
         })
@@ -102,8 +103,8 @@ describe('TasksService', () => {
         const updateTasksStatusDto: UpdateTasksStatusDto = { status: TasksStatus.DONE }
 
         it('should update task status when found', async () => {
-            jest.spyOn(tasksService, 'getTaskById').mockResolvedValue(mockTask)
-            jest.spyOn(tasksRepository, 'updateOne').mockResolvedValue(undefined)
+            vi.spyOn(tasksService, 'getTaskById').mockResolvedValue(mockTask)
+            vi.spyOn(tasksRepository, 'updateOne').mockResolvedValue(undefined)
             const result = await tasksService.updateTaskStatus(mockTask.id, updateTasksStatusDto, mockUser.id)
             expect(result.status).toStrictEqual(updateTasksStatusDto.status)
             expect(tasksService.getTaskById).toHaveBeenCalled()
@@ -111,7 +112,7 @@ describe('TasksService', () => {
         })
 
         it('should throw error when task not found', async () => {
-            jest.spyOn(tasksRepository, 'findOne').mockResolvedValue(undefined)
+            vi.spyOn(tasksRepository, 'findOne').mockResolvedValue(undefined)
             await expect(tasksService.updateTaskStatus('randomId', updateTasksStatusDto, mockUser.id)).rejects.toThrow(NotFoundException)
             expect(tasksRepository.findOne).toHaveBeenCalled()
         })
