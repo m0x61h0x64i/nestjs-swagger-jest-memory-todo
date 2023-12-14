@@ -74,18 +74,6 @@ export class TasksController {
         return await this.tasksService.getTasksByFilter(getTasksFilterDto, user.id);
     }
 
-    @ApiOperation({ summary: 'Delete a task' })
-    @ApiNoContentResponse({ description: 'OK' })
-    @ApiNotFoundResponse({ description: 'Task Not Found!', type: NotFoundSwagger })
-    @HttpCode(HttpStatus.NO_CONTENT)
-    @Delete(':id')
-    async deleteTask(
-        @Param('id') id: string,
-        @GetUser() user: User
-    ): Promise<void> {
-        await this.tasksService.deleteTask(id, user.id);
-    }
-
     @ApiOperation({ summary: 'Update a task status' })
     @ApiBadRequestResponse({ description: 'Validation Error', type: BadRequestSwagger })
     @ApiOkResponse({ description: 'OK', type: Task })
@@ -96,5 +84,17 @@ export class TasksController {
         @GetUser() user: User
     ): Promise<Task> {
         return await this.tasksService.updateTaskStatus(id, updateTasksStatusDto, user.id);
+    }
+
+    @ApiOperation({ summary: 'Delete a task' })
+    @ApiNoContentResponse({ description: 'OK' })
+    @ApiNotFoundResponse({ description: 'Task Not Found!', type: NotFoundSwagger })
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @Delete(':id')
+    async deleteTask(
+        @Param('id') id: string,
+        @GetUser() user: User
+    ): Promise<void> {
+        await this.tasksService.deleteTask(id, user.id);
     }
 }

@@ -32,7 +32,7 @@ describe('AuthController', () => {
         authController = testingModule.get<AuthController>(AuthController)
     })
 
-    describe('Post | /auth/signup | User signup', () => {
+    describe('signup', () => {
         it('should signup new user', async () => {
             const createUserDto: CreateUserDto = { username: 'username', password: 'password' }
             vi.spyOn(authService, 'signup').mockResolvedValue(mockUser)
@@ -41,7 +41,7 @@ describe('AuthController', () => {
         })
     })
 
-    describe('Post | /auth/signin | User signin', () => {
+    describe('signin', () => {
         it('should signin user', async () => {
             const getUserDto: GetUserDto = { username: 'username', password: 'password' }
             vi.spyOn(authService, 'signin').mockResolvedValue(mockUser)

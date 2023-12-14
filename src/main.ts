@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import basicAuth from 'express-basic-auth'
+import * as basicAuth from 'express-basic-auth'
 import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
@@ -27,7 +27,7 @@ async function bootstrap() {
         )
         .setTitle('Task Management APIs')
         .setDescription(`<center>test</center>`)
-        .addServer('http://localhost:3000', 'dev')
+        .addServer('http://127.0.0.1:3000', 'dev')
         .addServer('https://x.com', 'production')
         .setVersion('1.0.0')
         .build();
@@ -39,11 +39,7 @@ async function bootstrap() {
     }
     SwaggerModule.setup('docs', app, document, swaggerSetupOptions);
 
-    if (process.env.NODE_ENV === 'development') {
-        app.enableCors()
-    } else {
-        app.enableCors({ origin: [process.env.ALLOWED_ORIGIN_WEBSITE_1!] })
-    }
+    app.enableCors({ origin: [process.env.ALLOWED_ORIGIN_WEBSITE_1!] })
 
     const port = process.env.PORT || 3000
     await app.listen(port);

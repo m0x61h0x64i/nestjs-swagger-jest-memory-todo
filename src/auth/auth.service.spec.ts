@@ -4,7 +4,7 @@ import { AuthRepository } from "./auth.repository"
 import { User } from "./user.entity"
 import { JwtService } from "@nestjs/jwt"
 import { BadRequestException, ConflictException, NotFoundException } from "@nestjs/common"
-import bcrypt from 'bcrypt'
+const bcrypt = require('bcrypt')
 import { CreateUserDto } from "./dto/create-user.dto"
 import { GetUserDto } from "./dto/get-user.dto"
 import { beforeEach, describe, expect, it, vi } from "vitest"

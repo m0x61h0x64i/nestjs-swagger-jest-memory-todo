@@ -42,7 +42,7 @@ describe('TasksController', () => {
         tasksService = testingModule.get<TasksService>(TasksService)
     })
 
-    describe('Post | /tasks | Create a task', () => {
+    describe('createTask', () => {
         it('should create a task', async () => {
             const createTaskDto: CreateTaskDto = { description: 'description', title: 'title' }
             vi.spyOn(tasksService, 'createTask').mockResolvedValue(mockTask)
@@ -51,7 +51,7 @@ describe('TasksController', () => {
         })
     })
 
-    describe('GET | /tasks/{id} | Get a task by id', () => {
+    describe('getTaskById', () => {
         it('should return a task by id', async () => {
             vi.spyOn(tasksService, 'getTaskById').mockResolvedValue(mockTask)
             await expect(tasksController.getTaskById(mockTask.id, mockUser)).resolves.toStrictEqual(mockTask)
@@ -59,7 +59,7 @@ describe('TasksController', () => {
         })
     })
 
-    describe('GET | /tasks | Get all tasks', () => {
+    describe('getAllTasks', () => {
         it('should return all tasks', async () => {
             vi.spyOn(tasksService, 'getAllTasks').mockResolvedValue([mockTask])
             await expect(tasksController.getAllTasks(mockUser)).resolves.toStrictEqual([mockTask])
@@ -67,29 +67,29 @@ describe('TasksController', () => {
         })
     })
 
-    describe('GET | /tasks/search | Search tasks', () => {
+    describe('getTasksByFilter', () => {
         it('should return tasks by filter', async () => {
-            const getTasksFilterDto: GetTasksFilterDto = { search: 'search', status: TasksStatus.OPEN }
+            const getTasksFilterDto: GetTasksFilterDto = { query: 'search', status: TasksStatus.OPEN }
             vi.spyOn(tasksService, 'getTasksByFilter').mockResolvedValue([mockTask])
             await expect(tasksController.getTasksByFilter(getTasksFilterDto, mockUser)).resolves.toStrictEqual([mockTask])
             expect(tasksService.getTasksByFilter).toHaveBeenCalled()
         })
     })
 
-    describe('Delete | /tasks/{id} | Delete Task', () => {
-        it('should delete a task', async () => {
-            vi.spyOn(tasksService, 'deleteTask').mockImplementation(() => Promise.resolve())
-            await tasksController.deleteTask(mockTask.id, mockUser)
-            expect(tasksService.deleteTask).toHaveBeenCalled()
-        })
-    })
-
-    describe('Patch | /tasks/{id}/status | Update Task Status By Id', () => {
+    describe('updateTaskStatus', () => {
         it('should update a task status by id', async () => {
             const updateTasksStatusDto: UpdateTasksStatusDto = { status: TasksStatus.DONE }
             vi.spyOn(tasksService, 'updateTaskStatus').mockResolvedValue(mockTask)
             await expect(tasksController.updateTaskStatus(mockTask.id, updateTasksStatusDto, mockUser)).resolves.toStrictEqual(mockTask)
             expect(tasksService.updateTaskStatus).toHaveBeenCalled()
+        })
+    })
+
+    describe('deleteTask', () => {
+        it('should delete a task', async () => {
+            vi.spyOn(tasksService, 'deleteTask').mockImplementation(() => Promise.resolve())
+            await tasksController.deleteTask(mockTask.id, mockUser)
+            expect(tasksService.deleteTask).toHaveBeenCalled()
         })
     })
 })

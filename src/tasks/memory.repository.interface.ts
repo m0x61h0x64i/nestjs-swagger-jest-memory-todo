@@ -7,6 +7,6 @@ export interface ITasksRepository {
     findOne(id: string, userId: string): Promise<Task | undefined>;
     findMany(userId: string): Promise<Task[]>;
     search(userTasks: Task[], getTasksDto: GetTasksFilterDto): Promise<Task[]>;
-    deleteOne(id: string): Promise<void>;
     updateOne(id: string, updateTasksStatusDto: UpdateTasksStatusDto): Promise<void>;
+    deleteOne(id: string): Promise<void>;
 }

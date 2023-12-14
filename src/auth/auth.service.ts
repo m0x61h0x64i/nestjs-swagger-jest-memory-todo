@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { GetUserDto } from './dto/get-user.dto';
-import bcrypt from 'bcrypt'
+const bcrypt = require('bcrypt')
 import { v4 as uuidv4 } from 'uuid';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './jwt-payload.interface';
@@ -14,7 +14,7 @@ export class AuthService {
         private jwtService: JwtService,
         private authRepository: AuthRepository
     ) { }
-    
+
     async signup(createUserDto: CreateUserDto): Promise<User> {
         const { username, password } = createUserDto
 
@@ -31,7 +31,7 @@ export class AuthService {
         const token: string = this.jwtService.sign(payload)
 
         const newUser: User = { id: uuidv4(), username, password: hashedPassword, token }
-        
+
         return await this.authRepository.createOne(newUser)
     }
 

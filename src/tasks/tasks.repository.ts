@@ -22,15 +22,15 @@ export class TasksRepository implements ITasksRepository {
     }
 
     async search(userTasks: Task[], getTasksDto: GetTasksFilterDto): Promise<Task[]> {
-        const { search, status } = getTasksDto
+        const { query, status } = getTasksDto
 
         let tasks: Task[] = userTasks
 
-        if (search) {
+        if (query) {
             tasks = this.tasks.filter(
                 (task) =>
-                    task.title.includes(search) ||
-                    task.description.includes(search),
+                    task.title.includes(query) ||
+                    task.description.includes(query),
             );
         }
 
@@ -41,12 +41,12 @@ export class TasksRepository implements ITasksRepository {
         return Promise.resolve(tasks)
     }
 
-    async deleteOne(id: string): Promise<void> {
-        this.tasks = this.tasks.filter((task) => task.id !== id);
-    }
-
     async updateOne(id: string, updateTasksStatusDto: UpdateTasksStatusDto): Promise<void> {
         const { status } = updateTasksStatusDto;
         this.tasks = this.tasks.map((task) => task.id === id ? { ...task, status } : task)
+    }
+
+    async deleteOne(id: string): Promise<void> {
+        this.tasks = this.tasks.filter((task) => task.id !== id);
     }
 }

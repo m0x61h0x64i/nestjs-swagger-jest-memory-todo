@@ -50,11 +50,6 @@ export class TasksService {
         return await this.tasksRepository.search(userTasks, getTasksDto)
     }
 
-    async deleteTask(id: string, userId: string): Promise<void> {
-        const userTask: Task = await this.getTaskById(id, userId);
-        await this.tasksRepository.deleteOne(userTask.id)
-    }
-
     async updateTaskStatus(
         id: string,
         updateTasksStatusDto: UpdateTasksStatusDto,
@@ -65,5 +60,10 @@ export class TasksService {
         await this.tasksRepository.updateOne(userTask.id, updateTasksStatusDto)
 
         return { ...userTask, ...updateTasksStatusDto };
+    }
+
+    async deleteTask(id: string, userId: string): Promise<void> {
+        const userTask: Task = await this.getTaskById(id, userId);
+        await this.tasksRepository.deleteOne(userTask.id)
     }
 }
