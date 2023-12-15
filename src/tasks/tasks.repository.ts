@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { Task } from "./task.entity";
 import { GetTasksFilterDto } from "./dto/get-tasks.dto";
 import { UpdateTasksStatusDto } from "./dto/update-tasks-status.dto";
-import { ITasksRepository } from "./memory.repository.interface";
+import { ITasksRepository } from "./tasks.repository.interface";
 
 @Injectable()
 export class TasksRepository implements ITasksRepository {

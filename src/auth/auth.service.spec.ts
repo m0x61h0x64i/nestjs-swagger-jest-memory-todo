@@ -44,7 +44,6 @@ describe('AuthService', () => {
         it('should signup new user', async () => {
             vi.spyOn(authRepository, 'findOne').mockResolvedValue(undefined)
             vi.spyOn(authRepository, 'createOne').mockResolvedValue(mockUser)
-            // This line may wrong
             vi.spyOn(jwtService, 'sign').mockReturnValue('token')
             await expect(authService.signup(createUserDto)).resolves.toStrictEqual(mockUser)
             expect(authRepository.findOne).toHaveBeenCalled()
@@ -65,7 +64,6 @@ describe('AuthService', () => {
         it('should signin', async () => {
             vi.spyOn(authRepository, 'findOne').mockResolvedValue(mockUser)
             vi.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(true))
-            // This line may wrong
             vi.spyOn(jwtService, 'sign').mockReturnValue('token')
             await expect(authService.signin(getUserDto)).resolves.toStrictEqual(mockUser)
             expect(authRepository.findOne).toHaveBeenCalled()
